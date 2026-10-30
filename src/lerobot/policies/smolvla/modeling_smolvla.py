@@ -808,6 +808,7 @@ class VLAFlowMatching(nn.Module):
             use_cache=self.config.use_cache,
         )
         num_steps = self.config.num_steps
+        time_grid = self.config.denoise_time_grid
 
         return euler_integrate(
             lambda input_x_t, current_timestep: self.denoise_step(
@@ -818,6 +819,9 @@ class VLAFlowMatching(nn.Module):
             ),
             noise,
             num_steps,
+            time_grid=torch.tensor(time_grid, dtype=torch.float32, device=device)
+            if time_grid is not None
+            else None,
             rtc_processor=self.rtc_processor,
             rtc_enabled=self._rtc_enabled(),
             inference_delay=kwargs.get("inference_delay"),

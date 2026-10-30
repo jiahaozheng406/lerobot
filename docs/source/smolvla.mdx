@@ -26,7 +26,25 @@ SmolVLA is Hugging Face’s lightweight foundation model for robotics. Designed 
    pip install -e ".[smolvla]"
    ```
 
+## Optional denoising time grid
+
+SmolVLA uses 10 uniformly spaced flow-matching steps by default. To evaluate a different
+inference schedule without retraining the policy, add these flags to a `lerobot-eval`
+command. The grid must have `num_steps + 1` strictly decreasing entries from `1.0` to `0.0`:
+
+```bash
+--policy.num_steps=6 \
+--policy.denoise_time_grid='[1.0, 0.7, 0.4, 0.2, 0.1, 0.04, 0.0]'
+```
+
+This changes only the inference-time integration schedule. A shorter schedule can change
+task success as well as latency, so compare it with the default and a uniform schedule
+at the same number of steps on your tasks before deployment. For background on
+non-uniform flow schedules, see [stage-aware denoising](https://arxiv.org/abs/2609.39822);
+its separately trained two-step method is different from the inference-only grid above.
+
 ## Collect a dataset
+
 
 SmolVLA is a base model, so fine-tuning on your own data is required for optimal performance in your setup.
 We recommend recording ~50 episodes of your task as a starting point. Follow our guide to get started: [Recording a Dataset](./il_robots)

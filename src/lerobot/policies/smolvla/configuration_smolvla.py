@@ -61,6 +61,7 @@ class SmolVLAConfig(PreTrainedConfig):
 
     # Decoding
     num_steps: int = 10
+    denoise_time_grid: tuple[float, ...] | None = None
 
     # Attention utils
     use_cache: bool = True
@@ -116,6 +117,20 @@ class SmolVLAConfig(PreTrainedConfig):
                 f"The chunk size is the upper bound for the number of action steps per model invocation. Got "
                 f"{self.n_action_steps} for `n_action_steps` and {self.chunk_size} for `chunk_size`."
             )
+        if self.denoise_time_grid is not None:
+            grid = self.denoise_time_grid
+            if (
+                len(grid) != self.num_steps + 1
+                or grid[0] != 1.0
+                or grid[-1] != 0.0
+                or any(
+                    not 0.0 <= current < previous <= 1.0
+                    for previous, current in zip(grid, grid[1:], strict=False)
+                )
+            ):
+                raise ValueError(
+                    "denoise_time_grid must contain num_steps + 1 strictly decreasing values from 1.0 to 0.0"
+                )
         if self.use_delta_joint_actions_aloha:
             raise NotImplementedError(
                 "`use_delta_joint_actions_aloha` is used by smolvla for aloha real models. It is not ported yet in LeRobot."
